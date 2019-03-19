@@ -105,7 +105,7 @@ def _get_engine(data_dict):
     engine = _engines.get(connection_url)
 
     if not engine:
-        extras = {'url': connection_url}
+        extras = {'url': connection_url, 'connect_args': {'sslmode':'disable'}}
         engine = sqlalchemy.engine_from_config(config,
                                                'ckan.datastore.sqlalchemy.',
                                                **extras)
@@ -486,7 +486,7 @@ def create_indexes(context, data_dict):
                      if sql_index_string.find(c) != -1]
         if not has_index:
             connection.execute(sql_index_string)
-            
+
     create_timestamp_index(context, data_dict)
 
 
@@ -581,7 +581,7 @@ def _drop_indexes(context, data_dict, unique=False):
 def _get_resource_size(resource_id, conn):
     sql_resource_size = 'select size from _table_metadata_ts \
         where name = %s'
-    
+
     size = conn.execute(sql_resource_size, resource_id).fetchone()
     return size[0]
 
@@ -741,7 +741,7 @@ def upsert_data(context, data_dict):
             row.append(datastore_helpers.utcnow())
             rows.append(row)
 
-        # another %s after to_tsvector(%s) for _autogen_timestamp 
+        # another %s after to_tsvector(%s) for _autogen_timestamp
         sql_string = u'''INSERT INTO "{res_id}" ({columns})
             VALUES ({values}, to_tsvector(%s), %s);'''.format(
             res_id=data_dict['resource_id'],
@@ -901,7 +901,7 @@ def _to_full_text(fields, record):
             if fname == u'_autogen_timestamp':
                 continue
         except:
-            pass 
+            pass
 
         value = record.get(field['id'])
         if not value:
