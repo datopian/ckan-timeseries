@@ -5,6 +5,7 @@ import logging
 import re
 
 import sqlalchemy.engine.url as sa_url
+from sqlalchemy import exc
 
 import ckan.plugins as p
 import ckan.logic as logic
@@ -36,6 +37,15 @@ def _is_legacy_mode(config):
 
     engine = db._get_engine({'connection_url': write_url})
     connection = engine.connect()
+
+    try:
+        # We execute any query here to see if db is still connected
+        connection.execute("SELECT 1;")
+
+    except exc.OperationalError, e:
+        connection.close()
+        connection = engine.connect()
+
 
     return (not config.get('ckan.datastore.read_url') or
             not db._pg_version_is_at_least(connection, '9.0'))
