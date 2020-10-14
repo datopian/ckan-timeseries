@@ -191,7 +191,7 @@ class TimeseriesPlugin(p.SingletonPlugin):
                 # To avoid getting stuck in an infinite loop
                 if count > 10:
                     return False
-                _is_read_only_database(self, count=count+1)
+                self._is_read_only_database(count=count+1)
             finally:
                 connection.close()
             if is_writable:
