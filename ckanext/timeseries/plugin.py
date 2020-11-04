@@ -181,17 +181,20 @@ class TimeseriesPlugin(p.SingletonPlugin):
     def _is_read_only_database(self, count=0):
         ''' Returns True if no connection has CREATE privileges on the public
         schema. This is the case if replication is enabled.'''
+
+        def check_writable():
+            sql = u"SELECT has_schema_privilege('public', 'CREATE')"
+            is_writable = connection.execute(sql).first()[0]
+            return is_writable
+
         for url in [self.ckan_url, self.write_url, self.read_url]:
             connection = db._get_engine({'connection_url': url}).connect()
             try:
-                sql = u"SELECT has_schema_privilege('public', 'CREATE')"
-                is_writable = connection.execute(sql).first()[0]
+                is_writable = check_writable()
             except exc.OperationalError, e:
                 connection.close()
-                # To avoid getting stuck in an infinite loop
-                if count > 10:
-                    return False
-                self._is_read_only_database(count=count+1)
+                connection = db._get_engine({'connection_url': url}).connect()
+                is_writable = check_writable()
             finally:
                 connection.close()
             if is_writable:
