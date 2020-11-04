@@ -178,7 +178,7 @@ class TimeseriesPlugin(p.SingletonPlugin):
             if not self._read_connection_has_correct_privileges():
                 self._log_or_raise('The read-only user has write privileges.')
 
-    def _is_read_only_database(self, count=0):
+    def _is_read_only_database(self):
         ''' Returns True if no connection has CREATE privileges on the public
         schema. This is the case if replication is enabled.'''
 
